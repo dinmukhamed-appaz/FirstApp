@@ -5,15 +5,15 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Icon
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -25,13 +25,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.lab3.ui.theme.Lab3Theme
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Email
-import androidx.compose.material.icons.rounded.Phone
-import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.dimensionResource
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,107 +44,137 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             Lab3Theme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = Color(0xFFD1E8D9)
-                ){
-                    BusinessCard()
+                LemonadeApp()
+            }
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LemonadeApp() {
+
+    var currentStep by remember { mutableStateOf(1) }
+
+    var squeezeCount by remember { mutableStateOf(0) }
+
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = "Lemonade",
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color(0xFFF2E561)
+                )
+            )
+        }
+    ) { innerPadding ->
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            color = Color.White
+        ) {
+            when (currentStep) {
+                1 -> {
+                    LemonTextAndImage(
+                        text = R.string.lemon_select,
+                        image = R.drawable.lemon_tree,
+                        contentDescription = R.string.lemon_tree_content_description,
+                        onImageClick = {
+                            currentStep = 2
+                            squeezeCount = (2..4).random()
+                        }
+                    )
+                }
+                2 -> {
+                    LemonTextAndImage(
+                        text = R.string.lemon_squeeze,
+                        image = R.drawable.lemon_squeeze,
+                        contentDescription = R.string.lemon_content_description,
+                        onImageClick = {
+                            squeezeCount--
+                            if (squeezeCount == 0) {
+                                currentStep = 3
+                            }
+                        }
+                    )
+                }
+
+                3 -> {
+                    LemonTextAndImage(
+                        text = R.string.lemon_drink,
+                        image = R.drawable.lemon_drink,
+                        contentDescription = R.string.lemonade_content_description,
+                        onImageClick = {
+                            currentStep = 4
+                        }
+                    )
+                }
+                4 -> {
+                    LemonTextAndImage(
+                        text = R.string.lemon_empty_glass,
+                        image = R.drawable.lemon_restart,
+                        contentDescription = R.string.empty_glass_content_description,
+                        onImageClick = {
+                            currentStep = 1
+                        }
+                    )
                 }
             }
         }
     }
 }
+
 @Composable
-fun BusinessCard(modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.SpaceBetween,
-        horizontalAlignment = Alignment.CenterHorizontally
+fun LemonTextAndImage(
+    text: Int,
+    image: Int,
+    contentDescription: Int,
+    onImageClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
     ) {
         Column(
-            modifier = Modifier.weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.fillMaxSize()
         ) {
-            Image(
-                painter = painterResource(R.drawable.android_logo),
-                contentDescription = null,
-                modifier = Modifier
-                    .height(120.dp)
-                    .width(120.dp)
-                    .background(Color(0xFF073042))
-                    .padding(8.dp)
-            )
+            Button(
+                onClick = onImageClick,
+                shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius)),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD1E8D9))
+            ) {
+                Image(
+                    painter = painterResource(image),
+                    contentDescription = stringResource(contentDescription),
+                    modifier = Modifier
+                        .width(dimensionResource(R.dimen.button_image_width))
+                        .height(dimensionResource(R.dimen.button_image_height))
+                        .padding(dimensionResource(R.dimen.button_interior_padding))
+                )
+            }
+            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_vertical)))
             Text(
-                text = stringResource(R.string.full_name),
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Light,
-                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                text = stringResource(text),
+                style = MaterialTheme.typography.bodyLarge
             )
-            Text(
-                text = stringResource(R.string.title),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF006D3B)
-            )
-        }
-
-        Column(
-            modifier = Modifier.padding(bottom = 32.dp)
-        ) {
-            Row(
-                modifier = Modifier.padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Phone,
-                    contentDescription = null,
-                    tint = Color(0xFF006D3B),
-                    modifier = Modifier.padding(end = 16.dp)
-                )
-                Text(
-                    text = stringResource(R.string.phone_number),
-                    fontSize = 16.sp
-                )
-            }
-            Row(
-                modifier = Modifier.padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Share,
-                    contentDescription = null,
-                    tint = Color(0xFF006D3B),
-                    modifier = Modifier.padding(end = 16.dp)
-                )
-                Text(
-                    text = stringResource(R.string.share_handle),
-                    fontSize = 16.sp
-                )
-            }
-            Row(
-                modifier = Modifier.padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Email,
-                    contentDescription = null,
-                    tint = Color(0xFF006D3B),
-                    modifier = Modifier.padding(end = 16.dp)
-                )
-                Text(
-                    text = stringResource(R.string.email),
-                    fontSize = 16.sp
-                )
-            }
         }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
     Lab3Theme {
-        BusinessCard()
+        LemonadeApp()
     }
 }
